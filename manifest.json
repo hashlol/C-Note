@@ -2,7 +2,10 @@
     "manifest_version": 3,
     "name": "Canvas Notes Extension",
     "version": "1.0",
-    "permissions": [],
+    "permissions": [
+        "activeTab",
+        "cookies"
+    ],
     "action": {
         "default_popup": "popup.html"
     },
