@@ -16,7 +16,7 @@
         "service_worker": "service-worker.js"
     },
     "web_accessible_resources":  [{
-        "resources": ["assets/notepadicon.blue.svg"],
+        "resources": ["assets/notepadicon.blue.svg", "assets/notepadicon.white.svg"],
         "matches": ["<all_urls>"]
     }],
     "content_scripts": [{

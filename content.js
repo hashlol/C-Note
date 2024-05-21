@@ -1,5 +1,5 @@
 // console.log("This prints to the console of the page (injected only if the page url matched)");
-class Main {
+class DOMElements {
   classList = new Set();
 
   createMenu() {
@@ -10,8 +10,7 @@ class Main {
     // Clone the li element
     var clone = secondMenuItem.cloneNode(true);
     clone.id = "li-menu-notes";
-
-    //create Notes Icon
+    // Create Notes Icon
     const img = document.createElement("img");
     var imgURL = chrome.runtime.getURL("assets/notepadicon.blue.svg");
     img.src = imgURL;
@@ -19,17 +18,54 @@ class Main {
     div[0].innerHTML = "";
     div[0].appendChild(img);
 
-    //Update tooltip text
+    // Update tooltip text
     const tooltip = clone.getElementsByClassName("menu-item__text");
     tooltip[0].innerHTML = " Notes ";
 
-    //Insert new Notes Icon
+    // This removes content from the page if the notes tab is clicked
+    clone.onclick = function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById("wrapper").classList.add("hidden"); // to remove this and next 3 lines once page is built properly
+      document.getElementById("content").classList.add("hidden");
+      document.getElementById("content").classList.add("hidden");
+      document.getElementById("wrapper").classList.remove("active-tab");
+      img.src = chrome.runtime.getURL("assets/notepadicon.white.svg");
+      clone.setAttribute("aria-current", "page");
+      clone.className =
+        "menu-item ic-app-header__menu-list-item ic-app-header__menu-list-item--active";
+      console.log("clicked clone");
+
+      ul.querySelectorAll("li").forEach((li) => {
+        if (li !== clone) {
+          li.removeAttribute("aria-current");
+          li.className = "menu-item ic-app-header__menu-list-item";
+          console.log("reset non clone");
+        }
+      });
+      history.pushState(null, null, '/notes');
+    };
+
+    // Insert new Notes Icon
     ul.appendChild(clone);
+
+    // This is gonna reset the other nodes and set their color back to normal if the li isnt the target
+    ul.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target !== clone) {
+        ul.querySelectorAll("li").forEach((li) => {
+          if (li !== target) {
+            li.removeAttribute("aria-current");
+            li.className = "menu-item ic-app-header__menu-list-item";
+          }
+        });
+      }
+      img.src = chrome.runtime.getURL("assets/notepadicon.blue.svg");
+    });
   }
 }
 
-class ApiCall {
-
+class ClassNameApiCall {
   constructor() {
     this.cookieNames = [
       "_hp2_props.3001039959",
@@ -41,7 +77,10 @@ class ApiCall {
       "canvas_session",
       "_csrf_token",
     ];
-    this.concatenatedCookies = this.cookieNames.map((name) => `${name}=${this.getCookieByName(name)}`).filter(Boolean).join("; ");
+    this.concatenatedCookies = this.cookieNames
+      .map((name) => `${name}=${this.getCookieByName(name)}`)
+      .filter(Boolean)
+      .join("; ");
   }
 
   // Function to fetch class data, will use to place class names within class's courseList set
@@ -99,13 +138,55 @@ class ApiCall {
   }
 }
 
-const mainInstance = new Main();
-const apiInstance = new ApiCall();
+class TextDocument {
+  constructor(title, course) {
+    this.title = title;
+    this.course = course;
+    this.lastEdited = this.formatDate(new Date());
+    this.textData = " ";
+  }
 
-async function main() {
-  let dirtyData = await apiInstance.fetchDataWithCookie(apiInstance.concatenatedCookies);
-  mainInstance.classList = apiInstance.cleanData(dirtyData);
-  mainInstance.createMenu();
+  formatDate(date) {
+    const padZero = (num) => (num < 10 ? "0" + num : num);
+
+    let month = padZero(date.getMonth() + 1);
+    let day = padZero(date.getDate());
+    let year = date.getFullYear();
+
+    let hours = date.getHours();
+    let minutes = padZero(date.getMinutes());
+    let ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+  }
 }
 
-main();
+class UserData {
+  constructor() {
+    this.textDocuments = [];
+  }
+}
+
+class Main {
+  constructor() {
+    this.mainInstance = new DOMElements();
+    this.classApiInstance = new ClassNameApiCall();
+  }
+
+  async classLoad() {
+    let dirtyData = await this.classApiInstance.fetchDataWithCookie(
+      this.classApiInstance.concatenatedCookies
+    );
+    this.mainInstance.classList = this.classApiInstance.cleanData(dirtyData);
+  }
+
+  mainEnsemble() {
+    this.mainInstance.createMenu();
+    this.classLoad();
+  }
+}
+
+const runTime = new Main();
+runTime.mainEnsemble();
