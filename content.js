@@ -1,12 +1,139 @@
 // console.log("This prints to the console of the page (injected only if the page url matched)");
+
 class DOMElements {
   classList = new Set();
+  constructor() {
+    this.replacementDiv = document.createElement("div"); // Main div which will house all of our information
+    this.parent = document.getElementById("application"); // parent div of application which is used to find children
+    this.wrapper = document.getElementById("wrapper"); // wrapper div which is replaced by replacementDiv in most cases
+    this.elements = [
+      // Map which will contain all of our elements so they're accesible and so that we can update them
+      { id: "replacementDiv", element: this.replacementDiv },
+      { id: "parent", element: this.parent },
+      { id: "wrapper", element: this.wrapper },
+    ];
+  }
 
-  createMenu() {
-    // Get the li element to clone
+  // Adds element based off of ID to map
+  addElement(id, element) {
+    this.elements.push({ id, element });
+  }
+
+  // Gets element from map given its id, id is a string
+  getElement(id) {
+    return this.elements.find((el) => el.id === id)?.element;
+  }
+
+  // Function that will modify an item given its ID
+  modifyElement(id, modifications) {
+    const element = this.getElement(id);
+    if (element) {
+      Object.assign(element.style, modifications);
+    }
+  }
+
+  // Placeholder for now sort of but will contain all of our components and styling being built
+  elementPreparation() {
+    this.modifyElement("replacementDiv", {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "column",
+      height: "100vh",
+      backgroundColor: "#f5f5f5",
+      padding: "20px",
+    });
+
+    // Create Notepad header
+    const notepadContainer = document.createElement("div");
+    notepadContainer.classList.add("notepad-container");
+
+    const header = document.createElement("div");
+    header.classList.add("header");
+    const h1 = document.createElement("h1");
+    h1.textContent = "Notepad";
+    const lastEdited = document.createElement("div");
+    lastEdited.classList.add("last-edited");
+    lastEdited.textContent = "Last Edited: XXXXXX";
+    header.appendChild(h1);
+    header.appendChild(lastEdited);
+
+    // Create note container
+    const noteContainer = document.createElement("div");
+    noteContainer.classList.add("note-container");
+
+    // Create note header
+    const noteHeader = document.createElement("div");
+    noteHeader.classList.add("note-header");
+    const noteTitle = document.createElement("div");
+    noteTitle.classList.add("note-title");
+    noteTitle.innerHTML = "Untitled File <span>&#9998;</span>";
+    const noteActions = document.createElement("div");
+    noteActions.classList.add("note-actions");
+    const shareButton = document.createElement("button");
+    shareButton.textContent = "Share";
+    const moreButton = document.createElement("button");
+    moreButton.innerHTML = "&#8942;";
+    noteActions.appendChild(shareButton);
+    noteActions.appendChild(moreButton);
+    noteHeader.appendChild(noteTitle);
+    noteHeader.appendChild(noteActions);
+
+    const noteContent = document.createElement("div");
+    noteContent.classList.add("note-content");
+    noteContent.innerHTML = "xxxxx<br>xxxxxx<br>xxxxxxxx<br>xxxxxxxxxxxxxx";
+
+    noteContainer.appendChild(noteHeader);
+    noteContainer.appendChild(noteContent);
+    notepadContainer.appendChild(header);
+    notepadContainer.appendChild(noteContainer);
+    this.replacementDiv.appendChild(notepadContainer);
+
+    const testElement = document.createElement("p");
+    const testInput = document.createElement("input");
+    testInput.placeholder = "Test input";
+    testElement.textContent = "TEST";
+
+    this.addElement("testElement", testElement);
+    this.addElement("testInput", testInput);
+
+    this.replacementDiv.appendChild(testElement);
+    this.replacementDiv.appendChild(testInput);
+
+    // Add items from classList to replacementDiv
+    for (const element of this.classList) {
+      let li = document.createElement("li");
+      li.textContent = element;
+      this.addElement(element, li);
+      this.replacementDiv.appendChild(li);
+    }
+
+    testInput.addEventListener("input", (event) => {
+      const inputValue = event.target.value;
+      console.log("Input value:", inputValue);
+    });
+    console.log("replacementDivRan");
+  }
+
+  onClickEvent() {
+    if (this.parent.contains(this.wrapper)) {
+      this.parent.replaceChild(this.replacementDiv, this.wrapper);
+      this.elementPreparation(); // Call elementPreparation after replacement
+    }
+  }
+
+  // Function which will be ran in createAndReadyMenuIcon to ensure that everything is being called properly
+  onMenuClickEvent() {
+    if (this.parent.contains(wrapper)) {
+      this.parent.replaceChild(this.replacementDiv, this.wrapper);
+      this.elementPreparation();
+    }
+  }
+
+  // Main function sort of -- it will create the menu icon which will then propagate all of the other items, also contains the logic for the icons styling
+  createAndReadyMenuIcon() {
     const ul = document.getElementById("menu");
     const secondMenuItem = ul.children[1];
-
     // Clone the li element
     var clone = secondMenuItem.cloneNode(true);
     clone.id = "li-menu-notes";
@@ -22,14 +149,11 @@ class DOMElements {
     const tooltip = clone.getElementsByClassName("menu-item__text");
     tooltip[0].innerHTML = " Notes ";
 
-    // This removes content from the page if the notes tab is clicked
-    clone.onclick = function (event) {
+    // This removes content from the page if the note icon is clicked and propagates with replacement info
+    clone.onclick = (event) => {
       event.preventDefault();
       event.stopPropagation();
-      document.getElementById("wrapper").classList.add("hidden"); // to remove this and next 3 lines once page is built properly
-      document.getElementById("content").classList.add("hidden");
-      document.getElementById("content").classList.add("hidden");
-      document.getElementById("wrapper").classList.remove("active-tab");
+      this.onMenuClickEvent(); // function call which will actually replace HTML
       img.src = chrome.runtime.getURL("assets/notepadicon.white.svg");
       clone.setAttribute("aria-current", "page");
       clone.className =
@@ -43,15 +167,15 @@ class DOMElements {
           console.log("reset non clone");
         }
       });
-      history.pushState(null, null, '/notes');
+      history.pushState(null, null, "/notes");
     };
 
     // Insert new Notes Icon
     ul.appendChild(clone);
 
-    // This is gonna reset the other nodes and set their color back to normal if the li isnt the target
+    // This is gonna reset the other nodes and set their color back to normal if the li isn't the target
     ul.addEventListener("click", (event) => {
-      const target = event.target;
+      const target = event.target.closest("li");
       if (target && target !== clone) {
         ul.querySelectorAll("li").forEach((li) => {
           if (li !== target) {
@@ -59,13 +183,23 @@ class DOMElements {
             li.className = "menu-item ic-app-header__menu-list-item";
           }
         });
+        img.src = chrome.runtime.getURL("assets/notepadicon.blue.svg");
       }
-      img.src = chrome.runtime.getURL("assets/notepadicon.blue.svg");
     });
+  }
+
+  // Placeholder for now but will ready textDocument and create it when needed
+  createTextDocument() {
+    console.log("placeholder");
+  }
+
+  // Main function which is gonna run createAndReadyMenuIcon
+  createAndPropagateDomElements() {
+    this.createAndReadyMenuIcon();
   }
 }
 
-class ClassNameApiCall {
+class CourseNameApiCall {
   constructor() {
     this.cookieNames = [
       "_hp2_props.3001039959",
@@ -171,20 +305,20 @@ class UserData {
 
 class Main {
   constructor() {
-    this.mainInstance = new DOMElements();
-    this.classApiInstance = new ClassNameApiCall();
+    this.DOMInstance = new DOMElements();
+    this.courseApiInstance = new CourseNameApiCall();
   }
 
-  async classLoad() {
-    let dirtyData = await this.classApiInstance.fetchDataWithCookie(
-      this.classApiInstance.concatenatedCookies
+  async courseLoader() {
+    let dirtyData = await this.courseApiInstance.fetchDataWithCookie(
+      this.courseApiInstance.concatenatedCookies
     );
-    this.mainInstance.classList = this.classApiInstance.cleanData(dirtyData);
+    this.DOMInstance.classList = this.courseApiInstance.cleanData(dirtyData);
   }
 
   mainEnsemble() {
-    this.mainInstance.createMenu();
-    this.classLoad();
+    this.DOMInstance.createAndPropagateDomElements();
+    this.courseLoader();
   }
 }
 
