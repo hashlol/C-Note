@@ -10,7 +10,6 @@ class App {
     }
   
     onMenuClickEvent() {
-        //$("#nav-home").notesEditor();
         $("#main").hide();
         $("#main-notes").show();
         if (!this.loaded) {

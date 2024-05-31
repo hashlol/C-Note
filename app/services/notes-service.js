@@ -6,8 +6,13 @@ class NotesService {
     // Method to insert notes
     insertNote(text) {
       const notes = this.getAllNotes();
-      notes.push(text);
+      const date = new Date().toISOString();
+      const newNote = [];
+      newNote.push(text);
+      newNote.push(date);
+      notes.push(newNote);
       localStorage.setItem(this.storageKey, JSON.stringify(notes));
+      return newNote;
     }
     // Method to retrieve all notes for the course
     getAllNotes() {

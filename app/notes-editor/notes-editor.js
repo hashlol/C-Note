@@ -1,18 +1,15 @@
 (function ($) {
  
     $.fn.notesEditor = function(course) {
-        const notesEditorContainer = $('<div></div>').load(chrome.runtime.getURL("app/notes-editor/notes-editor.html"), () => {
-            let $table = `<table id="dt-${course}" class="display table table-striped" width="100%"></table>`;
-            $('.card-body', this).append($table);
-
-            //Mock data - to be replaced with service call to retrieve notes from local storage
-            const dataSet = [
-                ['This is a note. This is a sample note!!!!', '2012/05/25'],
-                ['This is a note. Im another note!.', '2022/12/25'],
-                ['This is awesome. Need to add more notes......', '2024/05/25'],
-                ['Need to complete practice quiz by 12/05/2023', '2023/10/25'],
-                ['Completed all of my assignments and discussions. Not sure what else to write.', '2011/04/25'],
-            ];
+        const settings = {
+            textareaSelector: '#txtNotes',
+            saveButtonSelector: '.btn-primary',
+            notesContainerSelector: '.card-body'
+        };
+        const notesService = new NotesService(course);
+        
+        const loadNotesList = () => {
+            const dataSet = notesService.getAllNotes();
              
             dataSet.forEach(r => {
                 var div1 = document.createElement('div');
@@ -24,16 +21,36 @@
                 r[3] = div3;
             })
              
-            new DataTable(`#dt-${course}`, {
+            this.dataTable = new DataTable(`#dt-${course}`, {
                 columns: [
                     { title: 'Text' },
                     { title: 'Date' }
                 ],
                 data: dataSet
             });
+        }
+        
+        const notesEditorContainer = $('<div></div>').load(chrome.runtime.getURL("app/notes-editor/notes-editor.html"), () => {
+            let $table = `<table id="dt-${course}" class="display table table-striped" width="100%"></table>`;
+            $(settings.notesContainerSelector, this).append($table);
+
+            $(settings.saveButtonSelector, this).on('click', () => {
+                const noteText = $(settings.textareaSelector, this).val();
+                if (noteText) {
+                  const note = notesService.insertNote(noteText);
+                  $(settings.textareaSelector, this).val('');  // Clear the textarea
+                  this.dataTable.row.add(note).draw();
+                }
+              });
+            
+            loadNotesList();
         });
+
         this.html(notesEditorContainer);
+        
         return this;
     };
  
 }( jQuery ));
+
+   
