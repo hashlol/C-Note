@@ -1,7 +1,11 @@
 {
     "manifest_version": 3,
     "name": "Canvas Notes Extension",
-    "version": "1.0",
+    "version": "1.001",
+    "icons": {
+        "48": "assets/48.png",
+        "128": "assets/128.png"
+    },
     "permissions": [
         "activeTab",
         "cookies"
@@ -16,11 +20,33 @@
         "service_worker": "service-worker.js"
     },
     "web_accessible_resources":  [{
-        "resources": ["assets/notepadicon.blue.svg", "assets/notepadicon.white.svg"],
-        "matches": ["<all_urls>"]
+        "matches": ["<all_urls>"],
+        "resources": [
+            "assets/notepadicon.blue.svg", 
+            "assets/notepadicon.white.svg",
+            "app/notes-editor/notes-editor.html", 
+            "app/index.html"
+        ]
     }],
     "content_scripts": [{
+        "run_at": "document_start",
         "matches": ["https://fiu.instructure.com/*"],
-        "js": ["content.js"]
+        "js": [
+            "js/external/jquery-3.7.1.min.js",
+            "js/external/datatables.min.js",
+            "js/external/dataTables.bootstrap5.js",
+            "app/notes-editor/notes-editor.js", 
+            "app/notes-tabs/notes-tabs.js", 
+            "js/dom-elements.js",
+            "js/text-document.js",
+            "app/services/course-service.js", 
+            "app/app.js", 
+            "main.js"
+        ],
+        "css": [
+            "css/bootstrap.min.css",
+            "css/datatables.min.css",
+            "css/datatables.bootstrap5.css"
+        ]
     }]
 }
