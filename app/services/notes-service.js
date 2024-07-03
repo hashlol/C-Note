@@ -14,6 +14,23 @@ class NotesService {
       return newNote;
     }
 
+    updateNote(title, noteData, noteID){
+      const notes = this.getAllNotes();
+      const date = this.formatDate(new Date());
+      const noteIndex = notes.findIndex(note => String(note[0]) === String(noteID));
+
+      if (noteIndex === -1) {
+          return null;
+      }
+
+      notes[noteIndex][1] = title;
+      notes[noteIndex][2] = noteData;
+      notes[noteIndex][3] = date;
+
+      localStorage.setItem(this.storageKey, JSON.stringify(notes));
+      return notes[noteIndex];
+    }
+
     deleteNote(noteID){
       const notesJson = localStorage.getItem(this.storageKey);
       if (!notesJson) {
@@ -22,11 +39,26 @@ class NotesService {
       }
       const notes = JSON.parse(notesJson);
       const updatedNotes = notes.filter(note => note[0] !== noteID);
-      console.log("noteID", noteID, "\nUpdated Notes:", updatedNotes);
       localStorage.setItem(this.storageKey, JSON.stringify(updatedNotes));
     }
+
+    getNoteContent(noteID) {
+      const notes = this.getAllNotes(); 
+      const note = notes.find(note => {
+          return String(note[0]) === String(noteID); 
+      });
+  
+      if (!note) {
+          return null;
+      }
+  
+      return {
+          title: note[1],
+          content: note[2],
+          lastEdited: note[3]
+      };
+  }
       
-    // Method to retrieve all notes for the course
     getAllNotes() {
       const notes = localStorage.getItem(this.storageKey);
       return notes ? JSON.parse(notes) : [];
