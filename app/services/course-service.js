@@ -1,4 +1,4 @@
-class CourseService {
+export class CourseService {
     constructor() {
       this.cookieNames = [
         "_hp2_props.3001039959",

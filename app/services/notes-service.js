@@ -1,4 +1,4 @@
-class NotesService {
+export class NotesService {
     constructor(courseId) {
       this.courseId = courseId;
       this.storageKey = `notes_${this.courseId}`;
