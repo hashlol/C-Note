@@ -58,7 +58,6 @@
                 ]
             });
 
-
             $(document).ready(function() {
                 $(document).on('click', '.delete-note', function() {
                     const noteId = $(this).data('id');             
@@ -81,24 +80,25 @@
                     }
                     
                 });
+
+                $(document).on('click', '.edit-note', function() {
+                    const noteId = $(this).data('id');
+                    if (!noteId) {
+                        return;
+                    }
+                    const note = notesService.getNoteContent(noteId);
+                    try{
+                        if(note.title && note.content){
+                            $(settings.titleSelector).val(note.title);
+                            $(settings.textareaSelector).val(note.content);
+                            $(settings.noteIDSelector).val(noteId);  
+                        }
+                    } catch(error){
+                        return;
+                    }
+                });
             })};
 
-            $(document).on('click', '.edit-note', function() {
-                const noteId = $(this).data('id');
-                if (!noteId) {
-                    return;
-                }
-                const note = notesService.getNoteContent(noteId);
-                try{
-                    if(note.title && note.content){
-                        $(settings.titleSelector).val(note.title);
-                        $(settings.textareaSelector).val(note.content);
-                        $(settings.noteIDSelector).val(noteId);  
-                    }
-                } catch(error){
-                    return;
-                }
-            });
 
             $(document).on('click', '.view-note', function() {
                 const noteId = $(this).data('id');

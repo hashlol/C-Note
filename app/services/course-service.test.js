@@ -8,7 +8,7 @@ global.document = {
 
 };
 
-import {CourseService} from './course-service';
+const CourseService =  require('./course-service-mock');
 
 describe('CourseService', () => {
 
