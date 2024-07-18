@@ -1,4 +1,4 @@
-import {NotesService} from './notes-service';
+const NotesService =  require('./notes-service-mock');
 
 const localStorageMock = (() => {
     let store = {};
