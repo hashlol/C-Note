@@ -1,11 +1,11 @@
 (function ($) {
     $.fn.notesEditor = function(course) {
         const settings = {
-            titleSelector: '#noteTitle',
-            textareaSelector: '#txtNotes',
+            titleSelector: `#noteTitle-${course}`,
+            textareaSelector: `#txtNotes-${course}`,
             saveButtonSelector: '.btn-primary',
             notesContainerSelector: '.card-body',
-            noteIDSelector: '#noteID'
+            noteIDSelector: `#noteID-${course}`
         };
         const notesService = new NotesService(course);
         let dataTable; 
@@ -123,6 +123,9 @@
             
 
         const notesEditorContainer = $('<div></div>').load(chrome.runtime.getURL("app/notes-editor/notes-editor.html"), () => {
+            notesEditorContainer.html(function(_, html) {
+                return html.replaceAll("{courseId}", course);
+            });
             let $table = `<table id="dt-${course}" class="display table table-striped" width="100%"></table>`;
             $(settings.notesContainerSelector, this).append($table);
 
